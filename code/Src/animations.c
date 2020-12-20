@@ -54,7 +54,7 @@ void set_pixel_color(uint8_t which, uint8_t r, uint8_t g, uint8_t b)
 void led_animation_handler(void)
 {
   frame_counter++;
-  for (int idx = 0; idx < NEOPIXEL_COUNT-2; ++idx)
+  for (int idx = 0; idx < NEOPIXEL_COUNT; ++idx)
   {
     int32_t current_frame = frame_counter - neo_anime[idx].animation_start;
     if(current_frame <= 0)
@@ -88,8 +88,8 @@ void led_animation_handler(void)
       set_pixel_color(neo_anime[idx].index, neo_anime[idx].current_color[0], neo_anime[idx].current_color[1], neo_anime[idx].current_color[2]);
     }  
   }
-	set_pixel_color(15, 255, 255, 255);
-	set_pixel_color(16, 255, 255, 255);
+	//set_pixel_color(15, 255, 255, 255);
+	//set_pixel_color(16, 255, 255, 255);
   taskENTER_CRITICAL();
   neopixel_show(red_buf, green_buf, blue_buf);
   taskEXIT_CRITICAL();
