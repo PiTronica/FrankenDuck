@@ -197,8 +197,8 @@ uint8_t load_colors(char* pf_fn)
   uint8_t ret;
   uint8_t is_unused_keys_dimmed = 1;
   uint8_t has_user_kd = 0;
-
-  for (int i = 0; i < MAPPABLE_KEY_COUNT; ++i)
+  int i;
+  for (i = 0; i < MAPPABLE_KEY_COUNT; ++i)
   {
     p_cache.individual_key_color[i][0] = DEFAULT_BG_RED;
     p_cache.individual_key_color[i][1] = DEFAULT_BG_GREEN;
@@ -207,6 +207,20 @@ uint8_t load_colors(char* pf_fn)
     p_cache.individual_keydown_color[i][1] = DEFAULT_KD_GREEN;
     p_cache.individual_keydown_color[i][2] = DEFAULT_KD_BLUE;
   }
+	i++;
+		p_cache.individual_key_color[i][0] = DEFAULT_BG_RED;
+    p_cache.individual_key_color[i][1] = DEFAULT_BG_GREEN;
+    p_cache.individual_key_color[i][2] = DEFAULT_BG_BLUE;
+    p_cache.individual_keydown_color[i][0] = DEFAULT_KD_RED;
+    p_cache.individual_keydown_color[i][1] = DEFAULT_KD_GREEN;
+    p_cache.individual_keydown_color[i][2] = DEFAULT_KD_BLUE;
+	i++;
+		p_cache.individual_key_color[i][0] = DEFAULT_BG_RED;
+    p_cache.individual_key_color[i][1] = DEFAULT_BG_GREEN;
+    p_cache.individual_key_color[i][2] = DEFAULT_BG_BLUE;
+    p_cache.individual_keydown_color[i][0] = DEFAULT_KD_RED;
+    p_cache.individual_keydown_color[i][1] = DEFAULT_KD_GREEN;
+    p_cache.individual_keydown_color[i][2] = DEFAULT_KD_BLUE;
 
   memset(temp_buf, 0, PATH_SIZE);
   sprintf(temp_buf, "/%s/config.txt", pf_fn);
