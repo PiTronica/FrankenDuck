@@ -37,8 +37,8 @@ typedef struct
   uint8_t available_profile[MAX_PROFILES];
   char profile_fn[FILENAME_SIZE];
   char key_fn[MAPPABLE_KEY_COUNT][FILENAME_SIZE];
-  uint8_t individual_key_color[MAPPABLE_KEY_COUNT][3];
-  uint8_t individual_keydown_color[MAPPABLE_KEY_COUNT][3];
+  uint8_t individual_key_color[KEY_COUNT][3];
+  uint8_t individual_keydown_color[KEY_COUNT][3];
 } profile_cache;
 
 typedef struct

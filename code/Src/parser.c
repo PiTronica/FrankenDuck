@@ -198,7 +198,7 @@ uint8_t load_colors(char* pf_fn)
   uint8_t is_unused_keys_dimmed = 1;
   uint8_t has_user_kd = 0;
   int i;
-  for (i = 0; i < MAPPABLE_KEY_COUNT; ++i)
+  for (i = 0; i < KEY_COUNT; ++i)
   {
     p_cache.individual_key_color[i][0] = DEFAULT_BG_RED;
     p_cache.individual_key_color[i][1] = DEFAULT_BG_GREEN;
@@ -247,7 +247,7 @@ uint8_t load_colors(char* pf_fn)
       uint8_t ggg = atoi(curr);
       curr = goto_next_arg(curr, msg_end);
       uint8_t bbb = atoi(curr);
-      for (int i = 0; i < MAPPABLE_KEY_COUNT; ++i)
+      for (int i = 0; i < KEY_COUNT; ++i)
       {
         p_cache.individual_key_color[i][0] = rrr;
         p_cache.individual_key_color[i][1] = ggg;
@@ -269,7 +269,7 @@ uint8_t load_colors(char* pf_fn)
       uint8_t ggg = atoi(curr);
       curr = goto_next_arg(curr, msg_end);
       uint8_t bbb = atoi(curr);
-      for (int i = 0; i < MAPPABLE_KEY_COUNT; ++i)
+      for (int i = 0; i < KEY_COUNT; ++i)
       {
         p_cache.individual_keydown_color[i][0] = rrr;
         p_cache.individual_keydown_color[i][1] = ggg;

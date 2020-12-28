@@ -95,16 +95,6 @@ void led_animation_handler(void)
   taskEXIT_CRITICAL();
 }
 
-void Up_Down_Fixed()
-{
-	red_buf[15] = 255;
-	green_buf[15] = 255;
-	blue_buf[15] = 255;
-	red_buf[16] = 255;
-	green_buf[16] = 255;
-	blue_buf[16] = 255;
-}
-
 
 void led_animation_init(led_animation* anime_struct, uint8_t index)
 {
