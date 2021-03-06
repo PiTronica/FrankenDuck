@@ -85,7 +85,7 @@ osThreadId kb_scanHandle;
 /* Private variables ---------------------------------------------------------*/
 uint8_t fw_version_major = 0;
 uint8_t fw_version_minor = 16;
-uint8_t fw_version_patch = 8;
+uint8_t fw_version_patch = 10;
 
 uint8_t fw_version_major_fd = 1;
 
@@ -482,16 +482,20 @@ void kb_scan_task(void const * argument)
 		
     memset(temp_buf, 0, PATH_SIZE);
     sprintf(temp_buf, "FW V%d.%d.%d", fw_version_major_fd, fw_version_minor, fw_version_patch);
-    ssd1306_SetCursor(35, 52);
+    ssd1306_SetCursor(35, 30);
     ssd1306_WriteString(temp_buf,Font_6x10,White);
 
-    ssd1306_SetCursor(5, 25);
-    ssd1306_WriteString("A DuckyPad Derivative",Font_6x10,White);
+    ssd1306_SetCursor(5, 18);
+    ssd1306_WriteString("A DuckyPad derivative",Font_6x10,White);
+    ssd1306_SetCursor(15, 40);
+    ssd1306_WriteString("Mod by: PiTronica ",Font_6x10,White);
+    ssd1306_SetCursor(30, 50);
+    ssd1306_WriteString(" & Headslash",Font_6x10,White);
     ssd1306_UpdateScreen();
 		for(int i = 0; i < 100; i++)
 		{			
       HAL_IWDG_Refresh(&hiwdg);
-			osDelay(30);
+			osDelay(35);
 		}
 	}
 	startup = 1;
