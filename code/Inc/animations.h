@@ -6,6 +6,7 @@
 #endif 
 
 #include "stm32f0xx_hal.h"
+#include "shared.h"
 
 #define THREE 3
 #define ANIMATION_NO_ANIMATION 0
@@ -14,13 +15,14 @@
 #define DEFAULT_BG_RED 64
 #define DEFAULT_BG_GREEN 16
 #define DEFAULT_BG_BLUE 255
-#define DEFAULT_BG_UD_RED 255
-#define DEFAULT_BG_UD_GREEN 255
-#define DEFAULT_BG_UD_BLUE 255
 #define DEFAULT_KD_RED 255
 #define DEFAULT_KD_GREEN 255
 #define DEFAULT_KD_BLUE 255
-#define BRIGHTNESS_LEVELS 11
+#ifdef FRANKENDUCK
+	#define BRIGHTNESS_LEVELS 11
+#else
+	#define BRIGHTNESS_LEVELS 5
+#endif
 
 typedef struct
 {

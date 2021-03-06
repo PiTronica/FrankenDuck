@@ -31,7 +31,7 @@ uint8_t mount_result;
 uint8_t has_valid_profiles;
 uint16_t cmd_delay, char_delay;
 unsigned int ignore_this;
-
+duckypad_parsed_command my_dpc;
 char temp_buf[PATH_SIZE];
 char lfn_buf[FILENAME_SIZE];
 char key_name_buf[FILENAME_SIZE];
@@ -79,14 +79,25 @@ const char cmd_PAGEDOWN[] = "PAGEDOWN";
 const char cmd_DELETE[] = "DELETE";
 const char cmd_END[] = "END";
 const char cmd_SPACE[] = "SPACE";
+
 const char cmd_SHIFT[] = "SHIFT";
+const char cmd_RSHIFT[] = "RSHIFT";
+
 const char cmd_ALT[] = "ALT";
-const char cmd_LALT[] = "LALT";
 const char cmd_RALT[] = "RALT";
+const char cmd_OPTION[] = "OPTION";
+const char cmd_ROPTION[] = "ROPTION";
+
 const char cmd_GUI[] = "GUI";
 const char cmd_WINDOWS[] = "WINDOWS";
+const char cmd_COMMAND[] = "COMMAND";
+const char cmd_RWINDOWS[] = "RWINDOWS";
+const char cmd_RCOMMAND[] = "RCOMMAND";
+
 const char cmd_CONTROL[] = "CONTROL";
 const char cmd_CTRL[] = "CTRL";
+const char cmd_RCTRL[] = "RCTRL";
+
 const char cmd_BG_COLOR[] = "BG_COLOR ";
 const char cmd_KD_COLOR[] = "KEYDOWN_COLOR ";
 const char cmd_SWCOLOR[] = "SWCOLOR_";
@@ -126,6 +137,12 @@ const char cmd_HOLD[] = "HOLD ";
 const char cmd_POWER[] = "POWER";
 
 const char cmd_LOOP[] = "LOOP";
+const char cmd_LCR[] = "LCR"; // loop counter reset
+
+const char cmd_SLEEP[] = "DP_SLEEP";
+const char cmd_PREV_PROFILE[] = "PREV_PROFILE";
+const char cmd_NEXT_PROFILE[] = "NEXT_PROFILE";
+const char cmd_GOTO_PROFILE[] = "GOTO_PROFILE";
 
 char* goto_next_arg(char* buf, char* buf_end)
 {
@@ -197,8 +214,16 @@ uint8_t load_colors(char* pf_fn)
   uint8_t ret;
   uint8_t is_unused_keys_dimmed = 1;
   uint8_t has_user_kd = 0;
-  int i;
-  for (i = 0; i < KEY_COUNT; ++i)
+	uint8_t count_to;
+	#ifdef FRANKENDUCK
+		count_to = KEY_COUNT;
+	#else
+		count_to = MAPPABLE_KEY_COUNT;
+	#endif
+	
+	
+	
+  for (int i = 0; i < count_to; ++i)
   {
     p_cache.individual_key_color[i][0] = DEFAULT_BG_RED;
     p_cache.individual_key_color[i][1] = DEFAULT_BG_GREEN;
@@ -207,20 +232,6 @@ uint8_t load_colors(char* pf_fn)
     p_cache.individual_keydown_color[i][1] = DEFAULT_KD_GREEN;
     p_cache.individual_keydown_color[i][2] = DEFAULT_KD_BLUE;
   }
-	i++;
-		p_cache.individual_key_color[i][0] = DEFAULT_BG_RED;
-    p_cache.individual_key_color[i][1] = DEFAULT_BG_GREEN;
-    p_cache.individual_key_color[i][2] = DEFAULT_BG_BLUE;
-    p_cache.individual_keydown_color[i][0] = DEFAULT_KD_RED;
-    p_cache.individual_keydown_color[i][1] = DEFAULT_KD_GREEN;
-    p_cache.individual_keydown_color[i][2] = DEFAULT_KD_BLUE;
-	i++;
-		p_cache.individual_key_color[i][0] = DEFAULT_BG_RED;
-    p_cache.individual_key_color[i][1] = DEFAULT_BG_GREEN;
-    p_cache.individual_key_color[i][2] = DEFAULT_BG_BLUE;
-    p_cache.individual_keydown_color[i][0] = DEFAULT_KD_RED;
-    p_cache.individual_keydown_color[i][1] = DEFAULT_KD_GREEN;
-    p_cache.individual_keydown_color[i][2] = DEFAULT_KD_BLUE;
 
   memset(temp_buf, 0, PATH_SIZE);
   sprintf(temp_buf, "/%s/config.txt", pf_fn);
@@ -247,7 +258,7 @@ uint8_t load_colors(char* pf_fn)
       uint8_t ggg = atoi(curr);
       curr = goto_next_arg(curr, msg_end);
       uint8_t bbb = atoi(curr);
-      for (int i = 0; i < KEY_COUNT; ++i)
+      for (int i = 0; i < count_to; ++i)
       {
         p_cache.individual_key_color[i][0] = rrr;
         p_cache.individual_key_color[i][1] = ggg;
@@ -269,7 +280,7 @@ uint8_t load_colors(char* pf_fn)
       uint8_t ggg = atoi(curr);
       curr = goto_next_arg(curr, msg_end);
       uint8_t bbb = atoi(curr);
-      for (int i = 0; i < KEY_COUNT; ++i)
+      for (int i = 0; i < count_to; ++i)
       {
         p_cache.individual_keydown_color[i][0] = rrr;
         p_cache.individual_keydown_color[i][1] = ggg;
@@ -302,7 +313,7 @@ uint8_t load_colors(char* pf_fn)
   f_close(&sd_file);
   if(is_unused_keys_dimmed)
   {
-    for (int i = 0; i < MAPPABLE_KEY_COUNT; ++i)
+    for (int i = 0; i < count_to; ++i)
     {
       if(strcmp(p_cache.key_fn[i], nonexistent_keyname) == 0)
       {
@@ -865,39 +876,39 @@ void parse_special_key(char* msg, my_key* this_key)
     this_key->code = KEY_LEFT_SHIFT;
     return;
   }
-  else if(strncmp(msg, cmd_ALT, strlen(cmd_ALT)) == 0)
+  if(strncmp(msg, cmd_RSHIFT, strlen(cmd_RSHIFT)) == 0)
+  {
+    this_key->code = KEY_RIGHT_SHIFT;
+    return;
+  }
+  else if((strncmp(msg, cmd_ALT, strlen(cmd_ALT)) == 0) || strncmp(msg, cmd_OPTION, strlen(cmd_OPTION)) == 0)
   {
     this_key->code = KEY_LEFT_ALT;
     return;
   }
-  else if(strncmp(msg, cmd_LALT, strlen(cmd_LALT)) == 0)
-  {
-    this_key->code = KEY_LEFT_ALT;
-    return;
-  }
-  else if(strncmp(msg, cmd_RALT, strlen(cmd_RALT)) == 0)
+  else if((strncmp(msg, cmd_RALT, strlen(cmd_RALT)) == 0) || strncmp(msg, cmd_ROPTION, strlen(cmd_ROPTION)) == 0)
   {
     this_key->code = KEY_RIGHT_ALT;
     return;
   }
-  else if(strncmp(msg, cmd_GUI, strlen(cmd_GUI)) == 0)
+  else if((strncmp(msg, cmd_GUI, strlen(cmd_GUI)) == 0) || (strncmp(msg, cmd_WINDOWS, strlen(cmd_WINDOWS)) == 0) || (strncmp(msg, cmd_COMMAND, strlen(cmd_COMMAND)) == 0))
   {
     this_key->code = KEY_LEFT_GUI;
     return;
   }
-  else if(strncmp(msg, cmd_WINDOWS, strlen(cmd_WINDOWS)) == 0)
+  else if((strncmp(msg, cmd_RWINDOWS, strlen(cmd_RWINDOWS)) == 0) || (strncmp(msg, cmd_RCOMMAND, strlen(cmd_RCOMMAND)) == 0))
   {
-    this_key->code = KEY_LEFT_GUI;
+    this_key->code = KEY_RIGHT_GUI;
     return;
   }
-  else if(strncmp(msg, cmd_CONTROL, strlen(cmd_CONTROL)) == 0)
+  else if((strncmp(msg, cmd_CTRL, strlen(cmd_CTRL)) == 0) || (strncmp(msg, cmd_CONTROL, strlen(cmd_CONTROL)) == 0))
   {
     this_key->code = KEY_LEFT_CTRL;
     return;
   }
-  else if(strncmp(msg, cmd_CTRL, strlen(cmd_CTRL)) == 0)
+  else if(strncmp(msg, cmd_RCTRL, strlen(cmd_RCTRL)) == 0)
   {
-    this_key->code = KEY_LEFT_CTRL;
+    this_key->code = KEY_RIGHT_CTRL;
     return;
   }
   else if(strncmp(msg, cmd_MENU, strlen(cmd_MENU)) == 0)
@@ -1119,6 +1130,12 @@ uint8_t parse_line(char* line, uint8_t keynum)
     parse_combo(line, &this_key);
   else if(strncmp(cmd_REM, line, strlen(cmd_REM)) == 0)
     ;
+  else if(strncmp(cmd_LCR, line, strlen(cmd_LCR)) == 0)
+  {
+    memset(key_press_count, 0, MAPPABLE_KEY_COUNT);
+    result = PARSE_OK;
+    goto parse_end;
+  }
   else if(strncmp(cmd_STRING, line, strlen(cmd_STRING)) == 0)
     kb_print(line + strlen(cmd_STRING), char_delay);
   else if(strncmp(cmd_UARTPRINT, line, strlen(cmd_UARTPRINT)) == 0)
@@ -1221,10 +1238,31 @@ void keypress_wrap(uint8_t keynum)
     }
     if(strncmp(cmd_REPEAT, read_buffer, strlen(cmd_REPEAT)) == 0)
     {
-      uint8_t repeats = atoi(goto_next_arg(read_buffer, read_buffer + strlen(read_buffer)));
+      uint8_t repeats = atoi(goto_next_arg(read_buffer, read_buffer + READ_BUF_SIZE));
       for (int i = 0; i < repeats; ++i)
         parse_line(prev_line, keynum);
       continue;
+    }
+    if(strncmp(cmd_SLEEP, read_buffer, strlen(cmd_SLEEP)) == 0)
+    {
+      my_dpc.type = DPC_SLEEP;
+      goto kp_end;
+    }
+    if(strncmp(cmd_PREV_PROFILE, read_buffer, strlen(cmd_PREV_PROFILE)) == 0)
+    {
+      my_dpc.type = DPC_PREV_PROFILE;
+      goto kp_end;
+    }
+    if(strncmp(cmd_NEXT_PROFILE, read_buffer, strlen(cmd_NEXT_PROFILE)) == 0)
+    {
+      my_dpc.type = DPC_NEXT_PROFILE;
+      goto kp_end;
+    }
+    if(strncmp(cmd_GOTO_PROFILE, read_buffer, strlen(cmd_GOTO_PROFILE)) == 0)
+    {
+      my_dpc.type = DPC_GOTO_PROFILE;
+      my_dpc.data = atoi(goto_next_arg(read_buffer, read_buffer + READ_BUF_SIZE));
+      goto kp_end;
     }
     result = parse_line(read_buffer, keynum);
     if(result == PARSE_ERROR)
@@ -1260,10 +1298,19 @@ void keypress_wrap(uint8_t keynum)
   key_press_count[keynum]++;
 }
 
+void dpc_init(duckypad_parsed_command* dpc)
+{
+  dpc->type = DPC_NONE;
+  dpc->data = 0;
+}
+
 void handle_keypress(uint8_t keynum, but_status* b_status)
 {
+  dpc_init(&my_dpc);
   keypress_wrap(keynum);
-
+  // don't repeat if this key asks to sleep or change profiles
+  if(my_dpc.type != DPC_NONE)
+    return;
   // don't repeat if this key is HOLD command
   if(hold_cache[keynum].key_type != KEY_TYPE_UNKNOWN && hold_cache[keynum].code != 0)
     return;

@@ -222,6 +222,7 @@ const char str_diaeresis[] = "dk_diaeresis";
 const char str_grave_accent[] = "dk_grave_accent";
 const char str_acute_accent[] = "dk_acute_accent";
 const char str_tilde[] = "dk_tilde";
+const char str_cedilla[] = "dk_cedilla";
 
 uint8_t load_keymap_by_name(char* name)
 {
@@ -244,6 +245,10 @@ uint8_t load_keymap_by_name(char* name)
 
   while(f_gets(read_buffer, READ_BUF_SIZE, &sd_file) != NULL)
   {
+  	if(strncmp(read_buffer, "//", 2) == 0)
+    {
+      goto read_keymap_loop_end;
+    }
     if(strncmp(read_buffer, str_circumflex, strlen(str_circumflex)) == 0)
     {
       circumflex = strtoul(read_buffer + strlen(str_circumflex), NULL, 0);
@@ -269,6 +274,11 @@ uint8_t load_keymap_by_name(char* name)
       tilde = strtoul(read_buffer + strlen(str_tilde), NULL, 0);
       goto read_keymap_loop_end;
     }
+    if(strncmp(read_buffer, str_cedilla, strlen(str_cedilla)) == 0)
+    {
+      cedilla = strtoul(read_buffer + strlen(str_cedilla), NULL, 0);
+      goto read_keymap_loop_end;
+    }
 
     ascii_index = strtoul(read_buffer, &next, 0);
     keycode = strtoul(next, NULL, 0);
@@ -280,6 +290,7 @@ uint8_t load_keymap_by_name(char* name)
   strcpy(curr_kb_layout, name);
   load_keymap_end:
   f_close(&sd_file);
+  _asciimap[0] = 0;
   return result;
 }
 
@@ -483,6 +494,27 @@ void keypress_task_start(void const * argument)
           {
             handle_keypress(i, &button_status[i]); // handle the button state inside here for repeats
             keydown_anime_end(i);
+            if(my_dpc.type == DPC_SLEEP)
+            {
+              start_sleeping();
+              dpc_init(&my_dpc);
+            }
+            if(my_dpc.type == DPC_PREV_PROFILE)
+            {
+              change_profile(PREV_PROFILE);
+              dpc_init(&my_dpc);
+            }
+            if(my_dpc.type == DPC_NEXT_PROFILE)
+            {
+              change_profile(NEXT_PROFILE);
+              dpc_init(&my_dpc);
+            }
+            if(my_dpc.type == DPC_GOTO_PROFILE)
+            {
+              if(p_cache.available_profile[my_dpc.data])
+                restore_profile(my_dpc.data);
+              dpc_init(&my_dpc);
+            }
           }
         }
         else if(i == KEY_BUTTON1 || i == KEY_BUTTON2)
@@ -502,6 +534,14 @@ void keypress_task_start(void const * argument)
   }
 }
 
+void start_sleeping(void)
+{
+  key_led_shutdown();
+  ssd1306_Fill(Black);
+  ssd1306_UpdateScreen();
+  is_sleeping = 1;
+}
+
 void animation_task_start(void const * argument)
 {
   while(init_complete == 0)
@@ -509,24 +549,23 @@ void animation_task_start(void const * argument)
   anime_init();
   for(;;)
   {
+    osDelay(20);
     led_animation_handler();
-    if(dp_settings.sleep_after_ms != 0 && is_sleeping == 0 && HAL_GetTick() - last_keypress > dp_settings.sleep_after_ms)
-    {
-      key_led_shutdown();
-      ssd1306_Fill(Black);
-      ssd1306_UpdateScreen();
-      is_sleeping = 1;
-    }
+    if(is_sleeping)
+      continue;
+
+    if(dp_settings.sleep_after_ms != 0 && HAL_GetTick() - last_keypress > dp_settings.sleep_after_ms)
+      start_sleeping();
     // dim OLED screen after 5 minutes of idle to prevent burn-in
     if(HAL_GetTick() - last_keypress > 300000)
       ssd1306_dim(1);
     // shift pixels around every 2 minutes to prevent burn-in
-    if(is_sleeping == 0 && is_in_settings == 0 && HAL_GetTick() > next_pixel_shift)
+    if(is_in_settings == 0 && HAL_GetTick() > next_pixel_shift)
     {
       if(has_valid_profiles)
         print_legend(rand()%3-1, rand()%3-1); // -1 to 1
       next_pixel_shift = HAL_GetTick() + 120000;
     }
-    osDelay(20);
+    
   }
 }

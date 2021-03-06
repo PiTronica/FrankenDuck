@@ -8,6 +8,7 @@
 #include "stm32f0xx_hal.h"
 #include "buttons.h"
 #include "keyboard.h"
+#include "shared.h"
 #define READ_BUF_SIZE 256
 #define MAX_PROFILES 32
 #define PATH_SIZE 40
@@ -37,8 +38,13 @@ typedef struct
   uint8_t available_profile[MAX_PROFILES];
   char profile_fn[FILENAME_SIZE];
   char key_fn[MAPPABLE_KEY_COUNT][FILENAME_SIZE];
-  uint8_t individual_key_color[KEY_COUNT][3];
-  uint8_t individual_keydown_color[KEY_COUNT][3];
+	#ifdef FRANKENDUCK
+		uint8_t individual_key_color[KEY_COUNT][3];
+		uint8_t individual_keydown_color[KEY_COUNT][3];
+	#else
+		uint8_t individual_key_color[MAPPABLE_KEY_COUNT][3];
+		uint8_t individual_keydown_color[MAPPABLE_KEY_COUNT][3];
+	#endif
 } profile_cache;
 
 typedef struct
@@ -52,6 +58,19 @@ typedef struct
   uint32_t sleep_after_ms;
 } dp_global_settings;
 
+#define DPC_NONE 0
+#define DPC_SLEEP 1
+#define DPC_PREV_PROFILE 2
+#define DPC_NEXT_PROFILE 3
+#define DPC_GOTO_PROFILE 4
+
+typedef struct
+{
+  uint8_t type;
+  uint8_t data;
+} duckypad_parsed_command;
+
+void dpc_init(duckypad_parsed_command* dpc);
 void change_profile(uint8_t dir);
 void handle_keypress(uint8_t key_num, but_status* b_status);
 void scan_profiles(void);
@@ -74,6 +93,7 @@ extern char lfn_buf[FILENAME_SIZE];
 extern char read_buffer[READ_BUF_SIZE];
 extern char curr_kb_layout[FILENAME_SIZE];
 extern char project_url[];
+extern duckypad_parsed_command my_dpc;
 
 #ifdef __cplusplus
 }
